@@ -1,0 +1,246 @@
+﻿using TMPro;
+using UnityEngine;
+
+public class CarBehaviour : MonoBehaviour
+{
+    public WheelCollider wheelColliderFL;
+    public WheelCollider wheelColliderFR;
+    public WheelCollider wheelColliderRL;
+    public WheelCollider wheelColliderRR;
+
+    public Transform centerOfMass;
+
+    public float maxTorque = 500;
+
+    public float maxSteerAngleHighSpeed = 5;
+    public float maxSteerAngleLowSpeed = 45;
+
+    public float sidewaysStiffness = 1.5f;
+    public float forewardStiffness = 1.5f;
+
+    public RectTransform speedPointerTransform;
+    public TMP_Text speedText;
+
+    public AudioClip engineSingleRPMSoundClip;
+
+    public ParticleSystem smokeL;
+    public ParticleSystem smokeR;
+
+    private Rigidbody _rigidbody;
+
+    private float _currentSpeedKmh;
+    private float _maxSpeedKmh = 140.0f;
+    private float _maxSpeedBackwardKmh= 30.0f;
+
+    private AudioSource _engineAudioSource;
+
+    private ParticleSystem.EmissionModule _smokeLEmission;
+    private ParticleSystem.EmissionModule _smokeREmission;
+
+    void Start()
+    {
+        this._rigidbody = gameObject.GetComponent<Rigidbody>();
+        this._rigidbody.centerOfMass = new Vector3(centerOfMass.localPosition.x,
+            centerOfMass.localPosition.y,
+            centerOfMass.localPosition.z);
+
+        SetWheelFrictionStiffness(forewardStiffness, sidewaysStiffness);
+
+        // Configure AudioSource component by program
+        _engineAudioSource = gameObject.AddComponent<AudioSource>();
+        _engineAudioSource.clip = engineSingleRPMSoundClip;
+        _engineAudioSource.loop = true;
+        _engineAudioSource.volume = 0.7f;
+        _engineAudioSource.playOnAwake = true;
+        _engineAudioSource.enabled = false; // Bugfix
+        _engineAudioSource.enabled = true; // Bugfix
+
+        _smokeLEmission = smokeL.emission;
+        _smokeREmission = smokeR.emission;
+        _smokeLEmission.enabled = true;
+        _smokeREmission.enabled = true;
+    }
+    
+    void FixedUpdate()
+    {
+        this._currentSpeedKmh = this._rigidbody.velocity.magnitude * 3.6f;
+
+        SetMotorTorque();
+        SetSteerAngle();
+
+        int gearNum = 0;
+        float engineRPM = kmh2rpm(_currentSpeedKmh, out gearNum);
+        SetEngineSound(engineRPM);
+
+        SetParticleSystems(engineRPM);
+    }
+
+    void OnGUI()
+    {
+        // Speedpointer rotation
+        // -34 deg =   0 km/h 
+        //  34 deg = 140 km/h
+        
+        // Get Angle of one km/h and scale that with current speed
+
+        // We need to subtract the to sides (34 deg) from total circle, because the speed meter is not a full circle (140 is the max speed on the speed meter)
+        float angleOfOneKmh = -(360 - (2 * 34)) / 140.0f;
+        
+        // Add initial -34 degree to the rotation, so it starts at 0 km/h
+        float degAroundZ = -34 + angleOfOneKmh * this._currentSpeedKmh;
+
+        speedPointerTransform.rotation = Quaternion.Euler(0, 0, degAroundZ);
+        // SpeedText show current KMH
+        speedText.text = this._currentSpeedKmh.ToString("0") + " km/h";
+    }
+
+    void SetParticleSystems(float engineRPM)
+    {
+        float smokeRate = engineRPM / 50.0f;
+        _smokeLEmission.rateOverDistance = new ParticleSystem.MinMaxCurve(smokeRate);
+        _smokeREmission.rateOverDistance = new ParticleSystem.MinMaxCurve(smokeRate);
+    }
+
+    void SetEngineSound(float engineRPM)
+    {
+        if (_engineAudioSource == null) return;
+        float minRPM = 800;
+        float maxRPM = 8000;
+        float minPitch = 0.3f;
+        float maxPitch = 3.0f;
+
+
+        var range = maxRPM - minRPM;
+        var scale = 1.0f / range * (engineRPM - minRPM);
+
+        float pitch = Mathf.Lerp(minPitch, maxPitch, scale);
+
+        //Debug.Log($"engineRPM {engineRPM} pitch {pitch}");
+
+
+        _engineAudioSource.pitch = pitch;
+    }
+
+    void SetSteerAngle()
+    {
+        var speedFactor = 1 - this._currentSpeedKmh / _maxSpeedKmh;
+        var currentMaxTurnAngle = maxSteerAngleHighSpeed + ((maxSteerAngleLowSpeed - maxSteerAngleHighSpeed) * speedFactor);
+        var steerAngle = currentMaxTurnAngle * Input.GetAxis("Horizontal");
+
+        //Debug.Log($"Steering {steerAngle} (Max: {currentMaxTurnAngle}) with speed: {_currentSpeedKmh} km/h");
+
+        wheelColliderFL.steerAngle = steerAngle;
+        wheelColliderFR.steerAngle = steerAngle;
+    }
+    
+    void SetMotorTorque()
+    {
+        var velocityIsForward = Vector3.Angle(transform.forward, _rigidbody.velocity) < 50f;
+
+        // Determine if the cursor key input means braking
+        var doBraking = _currentSpeedKmh > 0.5f &&
+                         (Input.GetAxis("Vertical") < 0 && velocityIsForward ||
+                          Input.GetAxis("Vertical") > 0 && !velocityIsForward);
+        if (doBraking)
+        {
+            wheelColliderFL.brakeTorque = 5000;
+            wheelColliderFR.brakeTorque = 5000;
+            wheelColliderRL.brakeTorque = 5000;
+            wheelColliderRR.brakeTorque = 5000;
+            wheelColliderFL.motorTorque = 0;
+            wheelColliderFR.motorTorque = 0;
+        }
+        else
+        {
+            wheelColliderFL.brakeTorque = 0;
+            wheelColliderFR.brakeTorque = 0;
+            wheelColliderRL.brakeTorque = 0;
+            wheelColliderRR.brakeTorque = 0;
+
+            var torque = maxTorque * Input.GetAxis("Vertical");
+
+            //var direction = this._isMovingForward ? "Forward" : "Backwards";
+            //Debug.Log($"Moving {direction} with speed: {_currentSpeedKmh} km/h");
+
+            if ((velocityIsForward && _currentSpeedKmh >= this._maxSpeedKmh) ||
+                (!velocityIsForward && _currentSpeedKmh >= this._maxSpeedBackwardKmh))
+            {
+                //No further acceleration if top speeds are reached
+                torque = 0;
+            }
+
+            wheelColliderFL.motorTorque = torque;
+            wheelColliderFR.motorTorque = torque;
+        }
+    }
+
+    void SetWheelFrictionStiffness(float forewardStiffness, float sidewaysStiffness)
+    {
+        WheelFrictionCurve f_fwWFC = wheelColliderFL.forwardFriction;
+        WheelFrictionCurve f_swWFC = wheelColliderFL.sidewaysFriction;
+
+        f_fwWFC.stiffness = forewardStiffness;
+        f_swWFC.stiffness = sidewaysStiffness;
+
+        wheelColliderFL.forwardFriction = f_fwWFC;
+        wheelColliderFL.sidewaysFriction = f_swWFC;
+        wheelColliderFR.forwardFriction = f_fwWFC;
+        wheelColliderFR.sidewaysFriction = f_swWFC;
+
+        wheelColliderRL.forwardFriction = f_fwWFC;
+        wheelColliderRL.sidewaysFriction = f_swWFC;
+        wheelColliderRR.forwardFriction = f_fwWFC;
+        wheelColliderRR.sidewaysFriction = f_swWFC;
+    }
+
+    float kmh2rpm(float kmh, out int gearNum)
+    {
+        Gear[] gears =
+        { new Gear( 1, 900, 12, 1400),
+            new Gear( 12, 900, 25, 2000),
+            new Gear( 25, 1350, 45, 2500),
+            new Gear( 45, 1950, 70, 3500),
+            new Gear( 70, 2500, 112, 4000),
+            new Gear(112, 3100, 180, 5000)
+        };
+        for (int i = 0; i < gears.Length; ++i)
+        {
+            if (gears[i].speedFits(kmh))
+            {
+                gearNum = i + 1;
+                return gears[i].interpolate(kmh);
+            }
+        }
+        gearNum = 1;
+        return 800;
+    }
+    
+}
+
+class Gear
+{
+    public Gear(float minKMH, float minRPM, float maxKMH, float maxRPM)
+    {
+        _minRPM = minRPM;
+        _minKMH = minKMH;
+        _maxRPM = maxRPM;
+        _maxKMH = maxKMH;
+    }
+    private float _minRPM;
+    private float _minKMH;
+    private float _maxRPM;
+    private float _maxKMH;
+    public bool speedFits(float kmh)
+    {
+        return kmh >= _minKMH && kmh <= _maxKMH;
+    }
+    public float interpolate(float kmh)
+    {
+        var range = _maxKMH -_minKMH;
+        var scale = 1.0f / range * (kmh - _minKMH);
+
+        //Debug.Log($"kmh {kmh} min {_minKMH} max {_maxKMH}--> scale {scale}");
+
+        return Mathf.Lerp(_minRPM, _maxRPM, scale);
+    }
+}
