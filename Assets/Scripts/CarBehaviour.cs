@@ -20,6 +20,7 @@ public class CarBehaviour : MonoBehaviour
 
     public RectTransform speedPointerTransform;
     public TMP_Text speedText;
+    public TMP_Text gearText;
 
     public AudioClip engineSingleRPMSoundClip;
 
@@ -31,6 +32,8 @@ public class CarBehaviour : MonoBehaviour
     private float _currentSpeedKmh;
     private float _maxSpeedKmh = 140.0f;
     private float _maxSpeedBackwardKmh= 30.0f;
+
+    private int _currentGearNum = 1;
 
     private AudioSource _engineAudioSource;
 
@@ -70,6 +73,9 @@ public class CarBehaviour : MonoBehaviour
 
         int gearNum = 0;
         float engineRPM = kmh2rpm(_currentSpeedKmh, out gearNum);
+
+        _currentGearNum = gearNum;
+
         SetEngineSound(engineRPM);
 
         SetParticleSystems(engineRPM);
@@ -91,6 +97,7 @@ public class CarBehaviour : MonoBehaviour
 
         speedPointerTransform.rotation = Quaternion.Euler(0, 0, degAroundZ);
         // SpeedText show current KMH
+        gearText.text = $"Gear: {this._currentGearNum}";
         speedText.text = this._currentSpeedKmh.ToString("0") + " km/h";
     }
 
