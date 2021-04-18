@@ -27,6 +27,11 @@ public class CarBehaviour : MonoBehaviour
     public ParticleSystem smokeL;
     public ParticleSystem smokeR;
 
+    public ParticleSystem dustFL;
+    public ParticleSystem dustFR;
+    public ParticleSystem dustBL;
+    public ParticleSystem dustBR;
+
     private Rigidbody _rigidbody;
 
     private float _currentSpeedKmh;
@@ -39,6 +44,19 @@ public class CarBehaviour : MonoBehaviour
 
     private ParticleSystem.EmissionModule _smokeLEmission;
     private ParticleSystem.EmissionModule _smokeREmission;
+
+    private ParticleSystem.EmissionModule _dustEmissionFL;
+    private ParticleSystem.EmissionModule _dustEmissionFR;
+    private ParticleSystem.EmissionModule _dustEmissionBL;
+    private ParticleSystem.EmissionModule _dustEmissionBR;
+
+    private string _groundTagFL;
+    private string _groundTagFR;
+
+    private int _groundTextureFL;
+    private int _groundTextureFR;
+
+    private bool _carIsOnDrySand;
 
     void Start()
     {
@@ -59,14 +77,31 @@ public class CarBehaviour : MonoBehaviour
         _engineAudioSource.enabled = true; // Bugfix
 
         _smokeLEmission = smokeL.emission;
-        _smokeREmission = smokeR.emission;
         _smokeLEmission.enabled = true;
+        _smokeREmission = smokeR.emission;
         _smokeREmission.enabled = true;
+
+
+        _dustEmissionFL = dustFL.emission;
+        _dustEmissionFL.enabled = true;
+        _dustEmissionFR = dustFR.emission;
+        _dustEmissionFR.enabled = true;
+        _dustEmissionBL = dustBL.emission;
+        _dustEmissionBL.enabled = true;
+        _dustEmissionBR = dustBR.emission;
+        _dustEmissionBR.enabled = true;
+
     }
     
     void FixedUpdate()
     {
         this._currentSpeedKmh = this._rigidbody.velocity.magnitude * 3.6f;
+
+        // Evaluate ground under front wheels
+        WheelHit hitFL = GetGroundInfos(ref wheelColliderFL, ref _groundTagFL, ref _groundTextureFL);
+        WheelHit hitFR = GetGroundInfos(ref wheelColliderFR, ref _groundTagFR, ref _groundTextureFR);
+        _carIsOnDrySand = _groundTagFL.CompareTo("Terrain") == 0 && _groundTextureFL == 0; //0 is sand
+
 
         SetMotorTorque();
         SetSteerAngle();
@@ -101,11 +136,45 @@ public class CarBehaviour : MonoBehaviour
         speedText.text = this._currentSpeedKmh.ToString("0") + " km/h";
     }
 
+    WheelHit GetGroundInfos(ref WheelCollider wheelCol,
+        ref string groundTag,
+        ref int groundTextureIndex)
+    { // Default values
+        groundTag = "InTheAir";
+        groundTextureIndex = -1;
+        // Query ground by ray shoot on the front left wheel collider
+        WheelHit wheelHit;
+        wheelCol.GetGroundHit(out wheelHit);
+        // If not in the air query collider
+        if (wheelHit.collider)
+        {
+            groundTag = wheelHit.collider.tag;
+            if (wheelHit.collider.CompareTag("Terrain"))
+                groundTextureIndex = TerrainSurface.GetMainTexture(transform.position);
+        }
+
+        Debug.Log($"GroundInfo: tag:{groundTag} index: {groundTextureIndex}");
+        return wheelHit;
+    }
+
+
     void SetParticleSystems(float engineRPM)
     {
-        float smokeRate = engineRPM / 50.0f;
+        //Set Engine smoke (exhausts)
+        float smokeRate = engineRPM / 10.0f;
         _smokeLEmission.rateOverDistance = new ParticleSystem.MinMaxCurve(smokeRate);
         _smokeREmission.rateOverDistance = new ParticleSystem.MinMaxCurve(smokeRate);
+
+        // Set wheels dust
+        float dustRate = 0;
+        if (_currentSpeedKmh > 10.0f && _carIsOnDrySand)
+            dustRate = _currentSpeedKmh;
+        Debug.Log(dustRate);
+
+        _dustEmissionFL.rateOverTime = new ParticleSystem.MinMaxCurve(dustRate);
+        _dustEmissionFR.rateOverTime = new ParticleSystem.MinMaxCurve(dustRate);
+        _dustEmissionBL.rateOverTime = new ParticleSystem.MinMaxCurve(dustRate);
+        _dustEmissionBR.rateOverTime = new ParticleSystem.MinMaxCurve(dustRate);
     }
 
     void SetEngineSound(float engineRPM)
