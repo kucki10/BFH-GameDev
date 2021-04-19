@@ -12,7 +12,9 @@ public class TimingBehaviour : MonoBehaviour
     private CarBehaviour _carScript;
     private AudioSource _gateAudioSource;
 
-    private float startTime;
+    private float _pastTime = 0;
+    private bool _isFinished = false;
+    private bool _isStarted = false;
 
     // Use this for initialization
     void Start()
@@ -51,15 +53,30 @@ public class TimingBehaviour : MonoBehaviour
         _gateAudioSource.Play();
         
         _carScript.thrustEnabled = true;
-        this.startTime = Time.time;
 
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Car")
+        {
+            if (!_isStarted)
+                _isStarted = true;
+                
+            else 
+                _isFinished = true;
+        }
     }
 
     void OnGUI()
     {
-        if (_countDown > 0)
-            timeText.text = this._countDown.ToString("0") + " sec";
+        if (_carScript.thrustEnabled)
+        {
+            if (_isStarted && !_isFinished)
+                _pastTime += Time.deltaTime;
+            timeText.text = _pastTime.ToString("0.0") + " sec.";
+        }
         else
-            timeText.text = (Time.time - startTime).ToString("0") + " sec";
+            timeText.text = _countDown.ToString("0.0") + " sec.";
     }
 }
