@@ -32,6 +32,8 @@ public class CarBehaviour : MonoBehaviour
     public ParticleSystem dustBL;
     public ParticleSystem dustBR;
 
+    public bool thrustEnabled;
+
     private Rigidbody _rigidbody;
 
     private float _currentSpeedKmh;
@@ -153,7 +155,7 @@ public class CarBehaviour : MonoBehaviour
                 groundTextureIndex = TerrainSurface.GetMainTexture(transform.position);
         }
 
-        Debug.Log($"GroundInfo: tag:{groundTag} index: {groundTextureIndex}");
+        //Debug.Log($"GroundInfo: tag:{groundTag} index: {groundTextureIndex}");
         return wheelHit;
     }
 
@@ -169,7 +171,7 @@ public class CarBehaviour : MonoBehaviour
         float dustRate = 0;
         if (_currentSpeedKmh > 10.0f && _carIsOnDrySand)
             dustRate = _currentSpeedKmh;
-        Debug.Log(dustRate);
+        //Debug.Log(dustRate);
 
         _dustEmissionFL.rateOverTime = new ParticleSystem.MinMaxCurve(dustRate);
         _dustEmissionFR.rateOverTime = new ParticleSystem.MinMaxCurve(dustRate);
@@ -211,6 +213,11 @@ public class CarBehaviour : MonoBehaviour
     
     void SetMotorTorque()
     {
+        if (!thrustEnabled)
+        {
+            return;
+        }
+
         var velocityIsForward = Vector3.Angle(transform.forward, _rigidbody.velocity) < 50f;
 
         // Determine if the cursor key input means braking
