@@ -34,6 +34,10 @@ public class CarBehaviour : MonoBehaviour
 
     public bool thrustEnabled;
 
+    public MeshRenderer frontLightsMeshRenderer;
+    public Light[] frontLights = new Light[2];
+
+
     private Rigidbody _rigidbody;
 
     private float _currentSpeedKmh;
@@ -62,6 +66,8 @@ public class CarBehaviour : MonoBehaviour
 
     void Start()
     {
+        GetAndApplyUserPrefs();
+
         this._rigidbody = gameObject.GetComponent<Rigidbody>();
         this._rigidbody.centerOfMass = new Vector3(centerOfMass.localPosition.x,
             centerOfMass.localPosition.y,
@@ -137,6 +143,32 @@ public class CarBehaviour : MonoBehaviour
         gearText.text = $"Gear: {this._currentGearNum}";
         speedText.text = this._currentSpeedKmh.ToString("0") + " km/h";
     }
+
+
+    private void GetAndApplyUserPrefs()
+    {
+        //Load settings
+        var prefs = new Prefs();
+        prefs.Load();
+        
+        //Apply settings
+        prefs.SetWheelColliderSuspension(ref wheelColliderFL, ref wheelColliderFR, ref wheelColliderRL, ref wheelColliderRR);
+        var meshRenderer = gameObject.GetComponentInChildren<MeshRenderer>();
+        prefs.SetBuggyColor(ref meshRenderer);
+        var self = this;
+        prefs.SetFriction(ref self);
+        forewardStiffness = prefs.frictionForwards;
+        sidewaysStiffness = prefs.frictionSidewards;
+
+        for (var i = 0; i < frontLights.Length; i++)
+        {
+            prefs.SetFrontLightsEnabled(ref frontLights[i], ref frontLightsMeshRenderer);
+            prefs.SetFrontLightsColor(ref frontLights[i], ref frontLightsMeshRenderer);
+        }
+        
+
+    }
+
 
     WheelHit GetGroundInfos(ref WheelCollider wheelCol,
         ref string groundTag,
