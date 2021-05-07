@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class SmoothFollow : MonoBehaviour
 {
@@ -40,5 +41,10 @@ public class SmoothFollow : MonoBehaviour
 
         // Always look at the target
         transform.LookAt(target);
+    }
+
+    public void OnMenuClick()
+    {
+        SceneManager.LoadScene("SceneMenu");
     }
 }
