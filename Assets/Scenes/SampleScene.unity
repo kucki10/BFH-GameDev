@@ -878,6 +878,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3360729849482136144, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
+        type: 3}
+      propertyPath: skidmarks
+      value: 
+      objectReference: {fileID: 3360729850179636840}
+    - target: {fileID: 3360729849656926600, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
+        type: 3}
+      propertyPath: skidmarks
+      value: 
+      objectReference: {fileID: 3360729850179636840}
+    - target: {fileID: 3360729849832834403, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
+        type: 3}
+      propertyPath: skidmarks
+      value: 
+      objectReference: {fileID: 3360729850179636840}
     - target: {fileID: 3360729849980755240, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
         type: 3}
       propertyPath: gearText
@@ -888,6 +903,11 @@ PrefabInstance:
       propertyPath: speedText
       value: 
       objectReference: {fileID: 109974975}
+    - target: {fileID: 3360729849980755240, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
+        type: 3}
+      propertyPath: brakeAudioClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 85d1d2bfe0982844db534547170065b1, type: 3}
     - target: {fileID: 3360729849980755240, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
         type: 3}
       propertyPath: speedPointerTransform
@@ -908,6 +928,31 @@ PrefabInstance:
       propertyPath: frontLights.Array.data[1]
       value: 
       objectReference: {fileID: 3360729850179636832}
+    - target: {fileID: 3360729849980755240, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
+        type: 3}
+      propertyPath: wheelBehaviours.Array.data[0]
+      value: 
+      objectReference: {fileID: 3360729850179636838}
+    - target: {fileID: 3360729849980755240, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
+        type: 3}
+      propertyPath: wheelBehaviours.Array.data[1]
+      value: 
+      objectReference: {fileID: 3360729850179636837}
+    - target: {fileID: 3360729849980755240, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
+        type: 3}
+      propertyPath: wheelBehaviours.Array.data[2]
+      value: 
+      objectReference: {fileID: 3360729850179636836}
+    - target: {fileID: 3360729849980755240, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
+        type: 3}
+      propertyPath: wheelBehaviours.Array.data[3]
+      value: 
+      objectReference: {fileID: 3360729850179636835}
+    - target: {fileID: 3360729851004480915, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
+        type: 3}
+      propertyPath: skidmarks
+      value: 
+      objectReference: {fileID: 3360729850179636840}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5b3427f1ff536d5408e8b6d7dab47da1, type: 3}
 --- !u!108 &3360729850179636832 stripped
@@ -928,6 +973,76 @@ MeshRenderer:
     type: 3}
   m_PrefabInstance: {fileID: 3360729850179636831}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &3360729850179636835 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3360729849832834403, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
+    type: 3}
+  m_PrefabInstance: {fileID: 3360729850179636831}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77875621f3157e44da37cc5f278c3978, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3360729850179636836 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3360729849482136144, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
+    type: 3}
+  m_PrefabInstance: {fileID: 3360729850179636831}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77875621f3157e44da37cc5f278c3978, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3360729850179636837 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3360729851004480915, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
+    type: 3}
+  m_PrefabInstance: {fileID: 3360729850179636831}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77875621f3157e44da37cc5f278c3978, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3360729850179636838 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3360729849656926600, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
+    type: 3}
+  m_PrefabInstance: {fileID: 3360729850179636831}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77875621f3157e44da37cc5f278c3978, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1 &3360729850179636839 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2477784843680820771, guid: 5b3427f1ff536d5408e8b6d7dab47da1,
+    type: 3}
+  m_PrefabInstance: {fileID: 3360729850179636831}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3360729850179636840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3360729850179636839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b06ca18b11f089941a486b8ada443590, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxMarks: 1024
+  markWidth: 0.225
+  groundOffset: 0.02
+  material: {fileID: 2100000, guid: 37a2bbb95cf6ce4478792c5eaea740cb, type: 2}
 --- !u!1001 &7182515940560690370
 PrefabInstance:
   m_ObjectHideFlags: 0

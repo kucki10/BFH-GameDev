@@ -37,6 +37,11 @@ public class CarBehaviour : MonoBehaviour
     public MeshRenderer frontLightsMeshRenderer;
     public Light[] frontLights = new Light[2];
 
+    public float fullBrakeTorque = 5000;
+    public AudioClip brakeAudioClip;
+
+    public WheelBehaviour[] wheelBehaviours = new WheelBehaviour[4];
+
 
     private Rigidbody _rigidbody;
 
@@ -64,6 +69,10 @@ public class CarBehaviour : MonoBehaviour
 
     private bool _carIsOnDrySand;
 
+    private bool _doSkidmarking;
+    private bool _carIsNotOnSand;
+    private AudioSource _brakeAudioSource;
+
     void Start()
     {
         GetAndApplyUserPrefs();
@@ -83,6 +92,15 @@ public class CarBehaviour : MonoBehaviour
         _engineAudioSource.playOnAwake = true;
         _engineAudioSource.enabled = false; // Bugfix
         _engineAudioSource.enabled = true; // Bugfix
+
+        // Configure brake audiosource component by program
+        _brakeAudioSource = (AudioSource)gameObject.AddComponent<AudioSource>();
+        _brakeAudioSource.clip = brakeAudioClip;
+        _brakeAudioSource.loop = true;
+        _brakeAudioSource.volume = 0.7f;
+        _brakeAudioSource.playOnAwake = false;
+        _brakeAudioSource.enabled = false;
+        _brakeAudioSource.enabled = true;
 
         _smokeLEmission = smokeL.emission;
         _smokeLEmission.enabled = true;
@@ -109,9 +127,9 @@ public class CarBehaviour : MonoBehaviour
         WheelHit hitFL = GetGroundInfos(ref wheelColliderFL, ref _groundTagFL, ref _groundTextureFL);
         WheelHit hitFR = GetGroundInfos(ref wheelColliderFR, ref _groundTagFR, ref _groundTextureFR);
         _carIsOnDrySand = _groundTagFL.CompareTo("Terrain") == 0 && _groundTextureFL == 0; //0 is sand
+        _carIsNotOnSand = _groundTagFL.CompareTo("Terrain") == 0 && _groundTextureFL > 0; //0 is sand
 
-
-        SetMotorTorque();
+        SetMotorTorque(hitFL, hitFR);
         SetSteerAngle();
 
         int gearNum = 0;
@@ -243,7 +261,7 @@ public class CarBehaviour : MonoBehaviour
         wheelColliderFR.steerAngle = steerAngle;
     }
     
-    void SetMotorTorque()
+    void SetMotorTorque(WheelHit hitFL, WheelHit hitFR)
     {
         if (!thrustEnabled)
         {
@@ -256,12 +274,21 @@ public class CarBehaviour : MonoBehaviour
         var doBraking = _currentSpeedKmh > 0.5f &&
                          (Input.GetAxis("Vertical") < 0 && velocityIsForward ||
                           Input.GetAxis("Vertical") > 0 && !velocityIsForward);
-        if (doBraking)
+        bool doFullBrake = Input.GetKey("space");
+        _doSkidmarking = _carIsNotOnSand && (doFullBrake || hitFL.sidewaysSlip < -0.45f || hitFR.sidewaysSlip > 0.45f) && _currentSpeedKmh > 20.0f;
+
+
+        SetBrakeSound(_doSkidmarking);
+        SetSkidmarking(_doSkidmarking);
+
+        if (doBraking || doFullBrake)
         {
-            wheelColliderFL.brakeTorque = 5000;
-            wheelColliderFR.brakeTorque = 5000;
-            wheelColliderRL.brakeTorque = 5000;
-            wheelColliderRR.brakeTorque = 5000;
+            float brakeTorque = doFullBrake ? fullBrakeTorque : maxTorque;
+
+            wheelColliderFL.brakeTorque = brakeTorque;
+            wheelColliderFR.brakeTorque = brakeTorque;
+            wheelColliderRL.brakeTorque = brakeTorque;
+            wheelColliderRR.brakeTorque = brakeTorque;
             wheelColliderFL.motorTorque = 0;
             wheelColliderFR.motorTorque = 0;
         }
@@ -287,6 +314,24 @@ public class CarBehaviour : MonoBehaviour
             wheelColliderFL.motorTorque = torque;
             wheelColliderFR.motorTorque = torque;
         }
+    }
+
+    void SetBrakeSound(bool doBrakeSound)
+    {
+        if (doBrakeSound)
+        {
+            _brakeAudioSource.volume = _currentSpeedKmh / 100.0f;
+            _brakeAudioSource.Play();
+        }
+        else
+            _brakeAudioSource.Stop();
+    }
+
+    // Turns skidmarking on or off on all wheels
+    void SetSkidmarking(bool doSkidmarking)
+    {
+        foreach (var wheel in wheelBehaviours)
+            wheel.DoSkidmarking(doSkidmarking);
     }
 
     void SetWheelFrictionStiffness(float forewardStiffness, float sidewaysStiffness)
