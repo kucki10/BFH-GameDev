@@ -1,8 +1,11 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class Prefs
 {
     public float suspensionDistance;
+    public float suspensionSpring;
+    public float suspensionDamper;
 
     public int buggyColorHue;
     public int buggyColorSat;
@@ -21,6 +24,8 @@ public class Prefs
     public void Load()
     {
         suspensionDistance = PlayerPrefs.GetFloat(nameof(suspensionDistance), 0.2f);
+        suspensionSpring = PlayerPrefs.GetFloat(nameof(suspensionSpring), 30000.0f);
+        suspensionDamper = PlayerPrefs.GetFloat(nameof(suspensionDamper), 1000.0f);
 
         buggyColorHue = PlayerPrefs.GetInt(nameof(buggyColorHue), 50);
         buggyColorSat = PlayerPrefs.GetInt(nameof(buggyColorSat), 120);
@@ -39,6 +44,8 @@ public class Prefs
     public void Save()
     {
         PlayerPrefs.SetFloat(nameof(suspensionDistance), suspensionDistance);
+        PlayerPrefs.SetFloat(nameof(suspensionSpring), suspensionSpring);
+        PlayerPrefs.SetFloat(nameof(suspensionDamper), suspensionDamper);
 
         PlayerPrefs.SetInt(nameof(buggyColorHue), buggyColorHue);
         PlayerPrefs.SetInt(nameof(buggyColorSat), buggyColorSat);
@@ -62,10 +69,16 @@ public class Prefs
 
     public void SetWheelColliderSuspension(ref WheelCollider wheelFL, ref WheelCollider wheelFR, ref WheelCollider wheelRL, ref WheelCollider wheelRR)
     {
-        wheelFL.suspensionDistance = suspensionDistance;
-        wheelFR.suspensionDistance = suspensionDistance;
-        wheelRL.suspensionDistance = suspensionDistance;
-        wheelRR.suspensionDistance = suspensionDistance;
+        var wheelColliders = new List<WheelCollider> {wheelFL, wheelFR, wheelRL, wheelRR};
+
+        foreach (var wheelCollider in wheelColliders)
+        {
+            var spring = wheelCollider.suspensionSpring;
+            spring.spring = suspensionSpring;
+            spring.damper = suspensionDamper;
+
+            wheelCollider.suspensionSpring = spring;
+        }
     }
 
     public void SetFriction(ref CarBehaviour carBehaviour)

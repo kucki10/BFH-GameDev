@@ -20,6 +20,10 @@ public class MenuBehaviour : MonoBehaviour
 
     public Slider sliderSuspensionDistance;
     public Text suspensionDistanceValue;
+    public Slider sliderSuspensionSpring;
+    public Text suspensionSpringValue;
+    public Slider sliderSuspensionDamper;
+    public Text suspensionDamperValue;
 
     public Slider sliderBuggyColorHue;
     public Text buggyColorHueValue;
@@ -54,6 +58,10 @@ public class MenuBehaviour : MonoBehaviour
 
         sliderSuspensionDistance.value = _prefs.suspensionDistance;
         suspensionDistanceValue.text = sliderSuspensionDistance.value.ToString("0.00");
+        sliderSuspensionSpring.value = _prefs.suspensionSpring;
+        suspensionSpringValue.text = sliderSuspensionSpring.value.ToString("0");
+        sliderSuspensionDamper.value = _prefs.suspensionDamper;
+        suspensionDamperValue.text = sliderSuspensionDamper.value.ToString("0");
 
 
         sliderBuggyColorHue.value = _prefs.buggyColorHue;
