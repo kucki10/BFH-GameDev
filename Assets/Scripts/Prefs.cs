@@ -78,6 +78,8 @@ public class Prefs
             spring.damper = suspensionDamper;
 
             wheelCollider.suspensionSpring = spring;
+
+            wheelCollider.suspensionDistance = suspensionDistance;
         }
     }
 

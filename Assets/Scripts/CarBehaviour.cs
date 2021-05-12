@@ -171,10 +171,13 @@ public class CarBehaviour : MonoBehaviour
         
         //Apply settings
         prefs.SetWheelColliderSuspension(ref wheelColliderFL, ref wheelColliderFR, ref wheelColliderRL, ref wheelColliderRR);
+       
         var meshRenderer = gameObject.GetComponentInChildren<MeshRenderer>();
         prefs.SetBuggyColor(ref meshRenderer);
+
         var self = this;
         prefs.SetFriction(ref self);
+
         forewardStiffness = prefs.frictionForwards;
         sidewaysStiffness = prefs.frictionSidewards;
 
