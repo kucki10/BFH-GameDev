@@ -96,6 +96,22 @@ public class MenuBehaviour : MonoBehaviour
         _prefs.SetWheelColliderSuspension(ref wheelColliderFL, ref wheelColliderFR, ref wheelColliderRL, ref wheelColliderRR);
     }
 
+    public void OnSliderChangedSuspensionSpring(float _)
+    {
+        suspensionSpringValue.text = sliderSuspensionSpring.value.ToString("0");
+        _prefs.suspensionSpring = sliderSuspensionSpring.value;
+
+        _prefs.SetWheelColliderSuspension(ref wheelColliderFL, ref wheelColliderFR, ref wheelColliderRL, ref wheelColliderRR);
+    }
+
+    public void OnSliderChangedSuspensionDamper(float _)
+    {
+        suspensionDamperValue.text = sliderSuspensionDamper.value.ToString("0");
+        _prefs.suspensionDamper = sliderSuspensionDamper.value;
+
+        _prefs.SetWheelColliderSuspension(ref wheelColliderFL, ref wheelColliderFR, ref wheelColliderRL, ref wheelColliderRR);
+    }
+
     public void OnSliderChangedBuggyColorHue(float _)
     {
         buggyColorHueValue.text = sliderBuggyColorHue.value.ToString("0");
@@ -184,6 +200,7 @@ public class MenuBehaviour : MonoBehaviour
     public void OnStartClick()
     {
         SceneManager.LoadScene("SampleScene");
+        _prefs.Save();
     }
 
     void OnApplicationQuit()
